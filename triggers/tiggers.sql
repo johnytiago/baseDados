@@ -23,7 +23,7 @@ CREATE TRIGGER check_seq_tipo_registo
     BEGIN
         IF (SELECT check_seq_func(NEW.idseq) )!=0
   THEN
-   set NEW.userid=null;
+   set NEW=null;
   END IF;
     END$$
 DELIMITER ;
@@ -35,7 +35,7 @@ CREATE TRIGGER check_seq_pagina
     BEGIN
         IF (SELECT check_seq_func(NEW.idseq) )!=0
   THEN
-   set NEW.userid=null;
+   set NEW=null;
   END IF;
     END$$
 DELIMITER ;
@@ -47,7 +47,7 @@ CREATE TRIGGER check_seq_campo
     BEGIN
         IF (SELECT check_seq_func(NEW.idseq) )!=0
   THEN
-   set NEW.userid=null;
+   set NEW=null;
   END IF;
     END$$
 DELIMITER ;
@@ -59,7 +59,19 @@ CREATE TRIGGER check_seq_registo
     BEGIN
         IF (SELECT check_seq_func(NEW.idseq) )!=0
   THEN
-   set NEW.userid=null;
+   set NEW=null;
+  END IF;
+    END$$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS check_seq_valor;
+DELIMITER $$
+CREATE TRIGGER check_seq_valor
+    BEFORE INSERT ON valor FOR EACH ROW
+    BEGIN
+        IF (SELECT check_seq_func(NEW.idseq) )!=0
+  THEN
+   set NEW=null;
   END IF;
     END$$
 DELIMITER ;
