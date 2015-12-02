@@ -1,4 +1,0 @@
-duvidas:
-
-reg_pag? tambem verificar idseq nessa tabela?
-criar trigger para reg_pag?
