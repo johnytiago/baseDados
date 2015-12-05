@@ -13,6 +13,7 @@
         $db = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+        $db->query("start transaction;");
 
         //UPDATE
         $sql = "UPDATE campo SET ativo = false WHERE userid=$userid AND typecnt=$typeid AND campocnt=$campid;";
@@ -20,6 +21,8 @@
 
         $sql = "UPDATE valor SET ativo = false WHERE userid=$userid AND typeid=$typeid AND campoid=$campid;";
         $db->query($sql);
+
+        $db->query("commit;");
 
         $db = null;
     }
