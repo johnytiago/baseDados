@@ -19,11 +19,12 @@
 
         $sql = "UPDATE reg_pag SET ativa = false WHERE pageid=$pageid;";
         $db->query($sql);
-
+;
         $db = null;
     }
     catch (PDOException $e)
     {
+        $db->query("rollback;");
         echo("<p>ERROR: {$e->getMessage()}</p>");
     }
 ?>

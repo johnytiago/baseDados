@@ -22,11 +22,12 @@
 
         $sql = "UPDATE reg_pag SET ativa = false WHERE userid=$userid AND typeid=$typeid;";
         $db->query($sql);
-
+;
         $db = null;
     }
     catch (PDOException $e)
     {
+        $db->query("rollback;");
         echo("<p>ERROR: {$e->getMessage()}</p>");
     }
 ?>
