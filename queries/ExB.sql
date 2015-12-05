@@ -9,8 +9,8 @@ CREATE VIEW todosAtivos AS (
 
 SELECT userid, typeid, regid, nome
 FROM todosAtivos A
-WHERE (userid, typeid, regid, pageid) NOT IN (
-    SELECT B1.userid, typeid, regid, pageid
+WHERE (userid, typeid, regid) NOT IN (
+    SELECT B1.userid, typeid, regid
     FROM (SELECT userid, typeid,  regid
         FROM todosAtivos) B1,
         (SELECT userid, pageid
