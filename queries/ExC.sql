@@ -10,5 +10,5 @@ CREATE VIEW todosAtivos AS (
 SELECT A.userid, B.nome, B.email, COUNT(distinct pageid) AS NumPags, count(*) NumRegs, count(*)/COUNT(distinct pageid) AS NumeroMedioRegistosPorPagina
 FROM  todosAtivos A, utilizador B
 WHERE A.userid=B.userid
-GROUP BY userid, pageid
+GROUP BY userid, nome, email
 ORDER BY 6 DESC;
