@@ -7,14 +7,15 @@ CREATE VIEW todosAtivos AS (
         AND R.regcounter=RP.regid AND P.pagecounter=RP.pageid
         AND T.ativo AND R.ativo AND P.ativa AND RP.ativa);
 
-SELECT userid, typeid, regid, nome
+SELECT DISTINCT userid, typeid, regid, nome
 FROM todosAtivos A
 WHERE (userid, typeid, regid) NOT IN (
     SELECT B1.userid, typeid, regid
     FROM (SELECT userid, typeid,  regid
         FROM todosAtivos) B1,
-        (SELECT userid, pageid
-        FROM todosAtivos) B2
+        (SELECT userid, pagecounter pageid
+        FROM pagina
+        WHERE ativa) B2
     WHERE B1.userid = B2.userid
         AND (B1.userid, typeid, regid, pageid) NOT IN (
             SELECT userid, typeid,  regid, pageid

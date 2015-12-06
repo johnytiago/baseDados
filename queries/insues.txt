@@ -1,1 +1,0 @@
-Tem de se alterar o ExC.sql para verificar se estão todos ativos, basta copiar a querie do view do ExB.sql
