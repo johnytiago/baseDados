@@ -4,4 +4,4 @@ FROM d_utilizador U,   (SELECT A.email, A.mes, A.ano, B.pais, AVG(A.numero_tenta
 						WHERE A.email=B.email 
 						GROUP BY A.email, A.ano, A.mes WITH ROLLUP) D
 WHERE U.email=D.email AND U.pais='Portugal'
-GROUP BY U.categoria, U.email, D.mes, D.ano, D.Media_Tentativas_Login;
+GROUP BY U.categoria, U.email, -D.ano DESC, -D.mes DESC, D.Media_Tentativas_Login;
