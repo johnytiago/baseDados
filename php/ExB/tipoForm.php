@@ -1,7 +1,7 @@
 <html>
     <body>
         <h3>Change balance for account</h3>
-        <form action="teste1.php" method="post">
+        <form action="inserirTipo.php" method="post">
             <p>UserID: <input type="text" name="user_id"/></p>
             <p>Nome Tipo de Registo: <input type="text" name="typeName"/></p>
             <p><input type="submit" value="Submit"/></p>
