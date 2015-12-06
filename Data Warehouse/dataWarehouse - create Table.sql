@@ -4,6 +4,7 @@ CREATE TABLE dataWarehouse(
     mes INT NOT NULL,
     ano INT NOT NULL,
     numero_tentativas_login INT NOT NULL,
+    PRIMARY KEY (email, dia, mes, ano),
     FOREIGN KEY (email) REFERENCES d_utilizador (email) ON DELETE CASCADE,
     FOREIGN KEY (dia, mes, ano) REFERENCES d_tempo (dia, mes, ano)
 );
