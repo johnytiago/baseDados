@@ -1,0 +1,11 @@
+DELIMITER ;
+SET foreign_key_checks = 0 ;
+TRUNCATE TABLE login;
+TRUNCATE TABLE campo;
+TRUNCATE TABLE pagina;
+TRUNCATE TABLE reg_pag;
+TRUNCATE TABLE registo;
+TRUNCATE TABLE sequencia;
+TRUNCATE TABLE tipo_registo;
+TRUNCATE TABLE utilizador;
+SET foreign_key_checks = 1 ;
