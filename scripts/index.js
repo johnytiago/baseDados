@@ -1,51 +1,74 @@
 var fs = require('fs');
+var util = require('util');
 var casual = require('casual');
 var async = require('async');
 
-// 1- criar USERSNUM  utilizadores
-// 2- criar PAGENUM paginas
-// 3- adicionar LOGINNUM logins
-// 4- criar TIPONUM tipos
-// 5- criar CAMPONUM campos
-// 5- criar REGNUM registo
-// 5.1- adicionar na reg_pag
-
 // amounts
-var USERSNUM = 5000;
-var PAGENUM = 5000;
-var LOGINNUM = 5000;
-var TIPONUM = 5000;
-var CAMPONUM = 5000;
-var REGNUM = 5000;
+var USERSNUM = 50000;
+var PAGENUM = 10;
+var TIPONUM = 10;
+var CAMPNUM = 10;
+var REGNUM = 10;
+//var LOGINNUM = USERSNUM;
 
 // Global variables
 var SEQUENCIA = 0;
 var REGPAGID = 0;
+var REGID = 0;
 var FILENAMES = [];
+var STREAMS= {};
 
 // Output order
-FILENAMES.push('./cleanDB.sql');
-FILENAMES.push('./populateUtilizador.sql');
-FILENAMES.push('./populateLogin.sql');
-FILENAMES.push('./populateSequencia.sql');
-FILENAMES.push('./populateTipo.sql');
-FILENAMES.push('./populatePagina.sql');
-FILENAMES.push('./populateCampo.sql');
-FILENAMES.push('./populateRegisto.sql');
-FILENAMES.push('./populateReg_pag.sql');
+FILENAMES.push('./tables/cleanDB.sql');
+FILENAMES.push('./tables/populateUtilizador.sql');
+FILENAMES.push('./tables/populateSequencia.sql');
+FILENAMES.push('./tables/populatePagina.sql');
+FILENAMES.push('./tables/populateTipo.sql');
+FILENAMES.push('./tables/populateRegisto.sql');
+//FILENAMES.push('./tables/populateCampo.sql');
+FILENAMES.push('./tables/populateReg_pag.sql');
+//FILENAMES.push('./tables/populateLogin.sql');
 
-// Helper functions
-function generateFile(genFunction, fileName, numLines, template) {
-  var wStream = fs.createWriteStream(`./${fileName}.sql`);
-  wStream.write(template);
-  for (var i = 1 ; i < numLines ; i++){
-    wStream.write(genFunction(i)+',');
-  }
-  wStream.end(genFunction(i)+';');
+// Creates destination folder
+try {
+  fs.mkdirSync('./tables');
+} catch (err) {
+  // folder exists nothing to do
 }
 
+// Fill files headers
+function initiateFile(fileName, header) {
+  var wStream = fs.createWriteStream(`./tables/${fileName}.sql`);
+  STREAMS[fileName] = wStream;
+  wStream.write(header);
+}
+
+// Initiates all files to be written
+initiateFile("cleanDB", `DELIMITER ;
+SET foreign_key_checks = 0 ;
+
+TRUNCATE TABLE login;
+TRUNCATE TABLE campo;
+TRUNCATE TABLE pagina;
+TRUNCATE TABLE reg_pag;
+TRUNCATE TABLE registo;
+TRUNCATE TABLE sequencia;
+TRUNCATE TABLE tipo_registo;
+TRUNCATE TABLE utilizador;
+
+SET foreign_key_checks = 1 ;`);
+initiateFile("populateUtilizador", "INSERT INTO utilizador (userid, email, nome, password, questao1, resposta1, questao2, resposta2, pais, categoria) VALUES");
+initiateFile('populateSequencia', 'INSERT INTO sequencia (userid, contador_sequencia, moment) VALUES ' ); //initiates sequence file
+initiateFile('populatePagina', "INSERT INTO pagina (userid, pagecounter, nome, idseq, ativa) VALUES ");
+initiateFile('populateTipo',"INSERT INTO tipo_registo (userid, typecnt, nome, idseq, ativo) VALUES ");
+//initiateFile('populateCampo', "INSERT INTO campo (userid, typecnt, campocnt, nome, idseq, ativo) VALUES ");
+initiateFile('populateRegisto', "INSERT INTO registo (userid, typecounter, regcounter, nome, idseq, ativo) VALUES ");
+initiateFile('populateReg_pag', "INSERT INTO reg_pag (idregpag, userid, typeid, pageid, regid, idseq, ativa) VALUES ");
+//initiateFile("populateLogin", "INSERT INTO login (userid, contador_login, sucesso, moment) VALUES");
+
+// ####### Helper functions ######
 function casualItem(){
-  var formats = ['{{name}}', '{{month_name}}', '{{city}}', '{{company_name}}'];
+  var formats = ['{{name}}', '{{city}}', '{{company_name}}'];
   return casual.populate_one_of(formats);
 }
 
@@ -56,113 +79,138 @@ function newDate(){
   return date;
 }
 
-// DROPS all tables
-var cleanDB = fs.createWriteStream('./cleanDB.sql');
-cleanDB.end(`DELIMITER ;
-SET foreign_key_checks = 0 ;
-TRUNCATE TABLE login;
-TRUNCATE TABLE campo;
-TRUNCATE TABLE pagina;
-TRUNCATE TABLE reg_pag;
-TRUNCATE TABLE registo;
-TRUNCATE TABLE sequencia;
-TRUNCATE TABLE tipo_registo;
-TRUNCATE TABLE utilizador;
-SET foreign_key_checks = 1 ;`);
-
-//// sequencia
-var wSeq = fs.createWriteStream('./populateSequencia.sql'); //initiates sequence file
-wSeq.write("INSERT INTO sequencia (userid, contador_sequencia,moment) VALUES");
-
+// sequencia
 function addSequencia(userId){
-  var a;
-  SEQUENCIA >= 1 ? a = ',': a = ''; // not add comma on first insert
-  wSeq.write(`${a}\n(${userId}, ${++SEQUENCIA}, "${newDate()}")`);
+  var comma;
+  SEQUENCIA >= 1 ? comma = ',': comma = ''; // not add comma on first insert
+  STREAMS['populateSequencia'].write(`${comma}\n(${userId}, ${++SEQUENCIA}, "${newDate()}")`);
   return SEQUENCIA;
 }
 
-// UTILIZADOR
-function generateUser(id) {
-  return `\n(${id}, "${casual.email}", "${casual.name}", "${casual.password}", "${casual.words(n=3)+'?'}", "${casual.word}", "${casual.words(n=3)+'?'}", "${casual.word}", "${casual.country}", "${casual.letter}")`;
-}
-
-var viewUser = "INSERT INTO utilizador (userid, email, nome, password, questao1, resposta1, questao2, resposta2, pais, categoria) VALUES ";
-generateFile(generateUser, "populateUtilizador", USERSNUM, viewUser);
-
-// PAGINA
-function generatePagina() {
-  var userId = casual.integer(from = 1, to = USERSNUM);
-  return `\n(${userId}, ${addSequencia(userId)}, "${casualItem()}", ${+casual.coin_flip})`;
-}
-
-var viewPagina = "INSERT INTO pagina (userid, pagecounter, nome, idseq, ativa) VALUES";
-generateFile(generatePagina, "populatePagina", PAGENUM, viewPagina);
-
 // LOGIN
 function generateLogin(id) {
-  return `\n(${casual.integer(from = 1, to = USERSNUM)}, ${id}, ${casual.integer(from = 0, to = 1)}, "${newDate()}")`;
+  return `\n(${casual.integer(from = 1, to = USERSNUM)}, ${id}, ${casual.coin_flip}, "${newDate()}")`;
 }
 
-var viewLogin = "INSERT INTO login (userid, contador_login, sucesso, moment) VALUES";
-generateFile(generateLogin, "populateLogin", LOGINNUM, viewLogin);
+// UTILIZADOR
+function generateUser(options) {
+  return `${options.comma}\n(${options.userId}, "${`${options.id}`+casual.email}", "${casual.name}", "${casual.password}", "${casual.words(n=3)+'?'}", "${casual.word}", "${casual.words(n=3)+'?'}", "${casual.word}", "${casual.country}", "${casual.letter}")`;
+}
+
+// PAGINA
+function generatePagina(options) {
+  return `${options.comma}\n(${options.userId}, ${options.pageId}, "${casualItem()}", ${addSequencia(options.userId)}, ${casual.coin_flip})`;
+}
 
 // TIPO
-function generateTipo(id) {
-  var userId = casual.integer(from = 1, to = USERSNUM);
-  return `\n(${userId}, ${id}, "${casualItem()}", ${addSequencia(userId)}, ${+casual.coin_flip})`;
+function generateTipo(options) {
+  return `${options.comma}\n(${options.userId}, ${options.tipoId}, '${casualItem()}', ${addSequencia(options.userId)}, ${casual.coin_flip})`;
 }
-
-var viewTipo = "INSERT INTO tipo_registo (userid, typecnt, nome, idseq, ativo) VALUES";
-generateFile(generateTipo, "populateTipo", TIPONUM, viewTipo);
 
 // CAMPO
-function generateCampo(id) {
-  var userId = casual.integer(from = 1, to = USERSNUM);
-  return `\n(${userId}, ${casual.integer(from = 1, to = TIPONUM)}, ${id}, "${casualItem()}", ${addSequencia(userId)}, ${+casual.coin_flip})`;
+function generateCampo(options) {
+  return `${options.comma}\n(${options.userId}, ${options.tipoId}, ${options.campoId}, "${casualItem()}", ${addSequencia(options.userId)}, ${casual.coin_flip})`;
 }
 
-var viewCampo = "INSERT INTO campo (userid, typecnt, campocnt, nome, idseq, ativo) VALUES";
-generateFile(generateCampo, "populateCampo", CAMPONUM, viewCampo);
-
-// REGISTO + REG_PAG
-function generateRegisto(id) {
-  var userId = casual.integer(from = 1, to = USERSNUM);
-  var tipoId = casual.integer(from = 1, to = TIPONUM);
-  generateReg_pag(++REGPAGID, userId, tipoId, id);   // called from here to make sure the par (userid, tipoid, regid) is right
-  return `\n(${userId}, ${tipoId}, ${id}, "${casualItem()}", ${addSequencia(userId)}, ${+casual.coin_flip})`;
+function generateRegisto(options) {
+  return `${options.comma}\n(${options.userId}, ${options.tipoId}, ${options.regId}, "${casualItem()}", ${addSequencia(options.userId)}, ${casual.coin_flip})`;
 }
 
-var viewRegisto = "INSERT INTO registo (userid, typecounter, regcounter, nome, idseq, ativo) VALUES";
-var viewReg_pag = "INSERT INTO reg_pag (idregpag, userid, typeid, pageid, regid, idseq, ativa) VALUES";
-var reg_pagStream = fs.createWriteStream('./populateReg_pag.sql');
-reg_pagStream.write(viewReg_pag);           // Iniciates the reg_pag file
-reg_pagStream.destroy();                    
-var aStream = fs.createWriteStream('./populateReg_pag.sql', {flags: 'a'});  // from now on only appends to the initiated file
-generateFile(generateRegisto, "populateRegisto", REGNUM, viewRegisto);
-
-function generateReg_pag(id, userId, tipoId, regId) {
-  var a;
-  REGPAGID === 1 ? a = '': a = ','; // not add comma on first insert
-  aStream.write(`${a}\n(${id}, ${userId}, ${tipoId}, ${casual.integer(from = 1, to = PAGENUM)}, ${regId}, ${addSequencia(userId)}, ${+casual.coin_flip})`);
+function generateReg_pag(options) {
+  return `${options.comma}\n(${options.regPagId}, ${options.userId}, ${options.tipoId}, ${options.pageId}, ${options.regId}, ${addSequencia(options.userId)}, ${casual.coin_flip})`;
 }
 
-// Last thing to do after all files are created: close sequence count
-aStream.end(';');
-wSeq.end(';');
+function writeLine(genFunction, fileName, options) {
+  options.id === 1 ? options.comma= '': options.comma = ','; // not add comma on first insert
+  STREAMS[fileName].write(genFunction(options));
+}
 
-//Aggregate all the results in one file
-fs.createWriteStream('./populateDB.sql').write('');
-async.eachSeries(FILENAMES, concatFiles, function(){ 
-  console.log("Files concatenated!")
+var tipoIdRange = {
+  bottom: 1,
+  top: TIPONUM
+};
+var pageIdRange = {
+  bottom: 1,
+  top: PAGENUM
+};
+
+for (var userId=1 ; userId <= USERSNUM; userId++) {
+  writeLine(generateUser, 'populateUtilizador', {userId, id: userId});
+
+  // cr8 TIPONUM tipos
+  for(var tipoId = tipoIdRange.bottom ; tipoId <= tipoIdRange.top ; tipoId++) {
+    writeLine(generateTipo, 'populateTipo', {userId, tipoId, id: tipoId});
+  }
+
+  for(var pageId = pageIdRange.bottom ; pageId <= pageIdRange.top ; pageId++) {
+    writeLine(generatePagina, 'populatePagina', {userId, pageId, id: pageId});
+  }
+
+  // cr8 REGNUM registos and the corresponding reg_pag lines
+  for(var regId = 1 ; regId <= REGNUM ; regId++) {
+    var tipoId= casual.integer(from= tipoIdRange.bottom, to= tipoIdRange.top);
+    var options = {
+      userId, 
+      regId: ++REGID,
+      tipoId,
+      pageId: casual.integer(from= pageIdRange.bottom, to= pageIdRange.top),
+      regPagId: ++REGPAGID,
+      id: REGID
+    }
+    writeLine(generateRegisto, 'populateRegisto', options); 
+    options.id = REGPAGID;
+    writeLine(generateReg_pag, 'populateReg_pag', options); 
+  }
+
+  // Store the range to pick for the same use
+  tipoIdRange.bottom += TIPONUM;
+  tipoIdRange.top += TIPONUM;
+  pageIdRange.bottom += PAGENUM;
+  pageIdRange.top += PAGENUM;
+
+  //for(var campoId = 1 ; campoId <= CAMPNUM ; campoId++) {
+    //writeLine(generateCampo, 'populateCampo', {
+      //userId,
+      //campoId,
+      //tipoId: casual.integer(from= tipoIdRange.bottom, to= tipoIdRange.top),
+      //id: campoId
+    //}); 
+  //}
+
+}
+
+// Last thing to do after all files are written
+var filesNames = FILENAMES.slice(1).map(function (name){
+  return name.match(/(\w*)(?=.sql)/g)[0]; // get the name of the file
 });
 
-function concatFiles(fileName, cb) {
-  var writeStream = fs.createWriteStream('./populateDB.sql', {flags: 'a'})
-  var readStream = fs.createReadStream(fileName);
+async.each(filesNames, endFile, function(err){
+  if(err)
+    return console.error('Error finalizing files');
 
-  readStream.pipe(writeStream, {end: false});
-  readStream.on('end', function() {
-    writeStream.end('\n\n');
-    return cb();
+  concatResults();
+});
+
+function endFile(filename, callback) {
+  STREAMS[filename].write(';');
+  callback();
+}
+
+// Concatenate all the results in one file
+function concatResults(){
+  fs.createWriteStream('./populateDB.sql').write(''); //cleans file now to use a flag then
+  async.eachSeries(FILENAMES, concatFiles, function(){ 
+    console.log("Files concatenated!")
   });
+
+  function concatFiles(fileName, cb) {
+    var writeStream = fs.createWriteStream('./populateDB.sql', {flags: 'a'})
+    var readStream = fs.createReadStream(fileName);
+
+    readStream.pipe(writeStream, {end: false});
+    readStream.on('end', function() {
+      writeStream.end('\n\n');
+      return cb();
+    });
+  }
 }
