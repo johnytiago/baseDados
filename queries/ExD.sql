@@ -9,5 +9,4 @@ WHERE U.userid = A.userid
                 SELECT *
                 FROM reg_pag R
                 WHERE T.userid = R.userid
-                    AND T.typecnt = R.typeid))
-ORDER BY userid;
+                    AND T.typecnt = R.typeid));

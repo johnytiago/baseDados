@@ -2,19 +2,20 @@ DELIMITER $$
 DROP FUNCTION IF EXISTS check_seq_func $$
 CREATE FUNCTION check_seq_func(seq_id INT) RETURNS INT
 BEGIN
-  RETURN EXISTS ( SELECT *
-     FROM (SELECT idseq FROM tipo_registo
-	   UNION
-	   SELECT idseq FROM pagina
-	   UNION
-	   SELECT idseq FROM campo
-	   UNION
-	   SELECT idseq FROM registo
-	   UNION
-	   SELECT idseq FROM valor
-   	   UNION
-	   SELECT idseq FROM reg_pag) A
-     WHERE A.idseq=seq_id);
+	RETURN EXISTS (
+		SELECT *
+		FROM (SELECT idseq FROM tipo_registo
+			UNION
+			SELECT idseq FROM pagina
+			UNION
+			SELECT idseq FROM campo
+			UNION
+			SELECT idseq FROM registo
+			UNION
+			SELECT idseq FROM valor
+		   	UNION
+			SELECT idseq FROM reg_pag) A
+		WHERE A.idseq=seq_id);
 END$$
 
 
