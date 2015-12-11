@@ -45,11 +45,9 @@
                     AND R.regcounter = V.regid
                     AND C.campocnt = V.campoid
                     AND P.pagecounter = RP.pageid
-                    AND P.ativa = 1
                     AND P.userid = {$UserId}
                     AND pageId = {$PageId}
-                ORDER BY nomeTipo, nomeRegisto
-                        ";
+                ORDER BY nomeTipo, nomeRegisto ";
 
         $result = $db->query($sql);
 
