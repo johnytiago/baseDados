@@ -17,22 +17,19 @@
         //PAGINA
         $sql = "SELECT MAX(pagecounter) AS MaxPageId FROM pagina;";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $MaxPageId=$row['MaxPageId'];
 
         //SEQUENCIA
         $sql = "SELECT MAX(contador_sequencia) AS MaxSeqId FROM sequencia;";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $MaxSeqId=$row['MaxSeqId'];
 
         //DATA
         $sql = "SELECT NOW()";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $timeStamp=$row['NOW()'];
 
         //INSERCOES

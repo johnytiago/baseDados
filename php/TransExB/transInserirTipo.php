@@ -14,25 +14,22 @@
 
         $db->query("start transaction;");
 
-        //PAGINA
+        //TIPO
         $sql = "SELECT MAX(typecnt) AS MaxTypeId FROM tipo_registo;";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $MaxTypeId=$row['MaxTypeId'];
 
         //SEQUENCIA
         $sql = "SELECT MAX(contador_sequencia) AS MaxSeqId FROM sequencia;";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $MaxSeqId=$row['MaxSeqId'];
 
         //DATA
         $sql = "SELECT NOW()";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $timeStamp=$row['NOW()'];
 
         //INSERCOES

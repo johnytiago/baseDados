@@ -18,22 +18,19 @@
         //CAMPOS
         $sql = "SELECT MAX(campocnt) AS MaxCampId FROM campo;";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $MaxCampId=$row['MaxCampId'];
 
         //SEQUENCIA
         $sql = "SELECT MAX(contador_sequencia) AS MaxSeqId FROM sequencia;";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $MaxSeqId=$row['MaxSeqId'];
 
         //DATA
         $sql = "SELECT NOW()";
         $result = $db->query($sql);
-        foreach($result as $row)
-        {}
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         $timeStamp=$row['NOW()'];
 
         //INSERCOES
